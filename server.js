@@ -63,10 +63,6 @@ app.use('/api',  async (req, res) => {
         });
         setTimeout(function() {console.log(refreshToken);console.log("obtained refresh token redirecting to [/success]");res.redirect('/success');}, 500)
       }
-      // if(refreshToken != null){
-      //   console.log("obtained refresh token redirecting to [/success]")
-      //   res.redirect('/success');
-      // }
   }
 });
 
@@ -74,62 +70,3 @@ app.use('/api',  async (req, res) => {
 app.get('*', (req,res) =>{
   res.sendFile(path.join(__dirname+'/build/index.html'));
 });
-
-// app.get('/', (req,res) =>{
-//   res.sendFile(path.join(__dirname+'/build/index.html'));
-// });
-
-
-// app.get('/api/success', (req,res) =>{
-//   console.log("request for frontend token sent")
-//   res.send({ refreshToken: refreshToken});
-// });
-
-// app.get('/api/callback', function(req, res) {
-//     console.log("sending request for [refresh token]")
-//     var code = req.query.code || null;
-//     var state = req.query.state || null;
-  
-//     if (state === null) {
-//       res.redirect('/#' +
-//         querystring.stringify({
-//           error: 'state_mismatch'
-//         }));
-//     } else {
-//       var authOptions = {
-//         url: 'https://accounts.spotify.com/api/token',
-//         form: {
-//           code: code,
-//           redirect_uri: redirect_callback, //api states it must be same uri sent from https://developer.spotify.com/documentation/web-api/tutorials/code-flow
-//           grant_type: 'authorization_code'
-//         },
-//         headers: {
-//           'Authorization': 'Basic ' + (new Buffer.from(client_id + ':' + client_secret).toString('base64'))
-//         },
-//         json: true
-//       };
-//       request.post(authOptions, function(error, response, body) {
-//         console.log("request post")
-//         if (!error && response.statusCode === 200) {
-//           console.log("no error and status 200")
-//           refreshToken = body.access_token;
-//           res.send({
-//             'access_token': refreshToken
-//           });
-//         } else {
-//           if(error){
-//             console.log("error",error)
-//             res.send({
-//               'error': error
-//             });
-//           } else {
-//             console.log("failed")
-//             res.send({
-//               'response': response,
-//               'body': body
-//             });
-//           }
-//         }
-//       });
-//     }
-// });
