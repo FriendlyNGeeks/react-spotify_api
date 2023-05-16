@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
+import { Button } from '@mui/material'
 
 
 export default function Home(props) {
-
-
-  useEffect(() => {
-
-  }, []);
+  const oauthPath = '/authorize'
 
   return (
     <div className="appHome">
-      <p>Ensure you have added your Client_id and Client_secret to the {'{.env}'} file before you run [npm run build]</p>
+      <p>Ensure you have added your client_id and client_secret to the {'{.env}'} file before you run [npm run build]</p>
+      <Button variant="contained" href={oauthPath}>Next</Button>
     </div>
   );
 }

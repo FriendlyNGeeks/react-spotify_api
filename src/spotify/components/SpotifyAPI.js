@@ -1,17 +1,18 @@
 import querystring from "querystring";
+import { Buffer } from "buffer";
 
-const NOW_PLAYING_ENDPOINT = `https://api.spotify.com/v1/me/player/currently-playing`;
-const TOKEN_ENDPOINT = `https://accounts.spotify.com/api/token`;
-
+const NOW_PLAYING_ENDPOINT = process.env.REACT_APP_SPOTIFY_ENDPOINT_PLAYING || null;
+const TOKEN_ENDPOINT = process.env.REACT_APP_SPOTIFY_ENDPOINT_TOKEN || null;
 const client_id = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
 const client_secret = process.env.REACT_APP_SPOTIFY_CLIENT_SECRET;
 const refresh_token = process.env.REACT_APP_SPOTIFY_REFRESH_TOKEN;
 
 const getAccessToken = async () => {
-  const basic = Buffer.from(`${client_id}:${client_secret}`).toString("base64");
+  const basic = new Buffer.from(`${client_id}:${client_secret}`).toString("base64");
 
   const response = await fetch(TOKEN_ENDPOINT, {
     method: "POST",
+    // mode: "no-cors", // Add this line
     headers: {
       Authorization: `Basic ${basic}`,
       "Content-Type": "application/x-www-form-urlencoded",
@@ -50,17 +51,42 @@ export default async function getNowPlayingItem(
   }
 
   const song = await response.json();
-  const albumImageUrl = song.item.album.images[0].url;
-  const artist = song.item.artists.map((_artist) => _artist.name).join(", ");
-  const isPlaying = song.is_playing;
-  const songUrl = song.item.external_urls.spotify;
-  const title = song.item.name;
+  if (song.item.album) {
+    const albumImageUrl = song.item.album.images[0].url || null;
+    const artist = song.item.artists.map((_artist) => _artist.name).join(", ");
+    const isPlaying = song.is_playing || null;
+    const songUrl = song.item.external_urls.spotify || null;
+    const title = song.item.name || null;
+    const duration = song.item.duration_ms || null;
+    const position = song.progress_ms || null;    
+    
+    return {
+      albumImageUrl,
+      artist,
+      isPlaying,
+      songUrl,
+      title,
+      duration,
+      position,
+    };
+  }else {
+    const albumImageUrl = null;
+    const artist = null;
+    const isPlaying = null;
+    const songUrl = null;
+    const title = null;
+    const duration = null;
+    const position = null;
+    
+    return {
+      albumImageUrl,
+      artist,
+      isPlaying,
+      songUrl,
+      title,
+      duration,
+      position,
+    };
+  }
 
-  return {
-    albumImageUrl,
-    artist,
-    isPlaying,
-    songUrl,
-    title,
-  };
 }

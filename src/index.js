@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { App } from './spotify/App';
+import { App } from './spotify/App/_index';
 import { BrowserRouter } from "react-router-dom";
 
 

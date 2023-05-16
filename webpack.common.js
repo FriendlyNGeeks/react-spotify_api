@@ -1,9 +1,22 @@
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
+require('dotenv').config({ path: './.env.local' });
+
 
 module.exports = {
-  mode: 'development',
-  entry: path.resolve(__dirname, './src/index.jsx'),
-  devtool: 'inline-source-map',
+  mode: 'production',
+  // mode: 'development',
+  // devtool: 'inline-source-map',
+  entry: path.resolve(__dirname, './src/index.js'),
+  plugins: [
+    new webpack.DefinePlugin({'process.env' : JSON.stringify(process.env)}),
+    new HtmlWebpackPlugin({
+      template: './public/index.html',
+      filename: 'index.html',
+      inject: 'body',
+    }),
+  ],
   module: {
     rules: [
       {
@@ -39,7 +52,10 @@ module.exports = {
     extensions: ['.js', '.jsx', '.ts'],
   },
   output: {
+    path: path.resolve(__dirname, 'build'),
     filename: 'app.js',
-    path: path.resolve(__dirname, 'build', 'js'),
   },
+  devServer: {
+    contentBase: path.resolve(__dirname, 'build')
+}
 };

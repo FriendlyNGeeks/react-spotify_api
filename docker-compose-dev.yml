@@ -1,0 +1,18 @@
+version: "2"
+services:
+  peons:
+    image: friendlyngeeks/peons-rpi:latest
+    container_name: react-spotify
+    build:
+      context: .
+      dockerfile: ./server/Dockerfile
+    volumes:
+      - ./server:/app
+    ports:
+      - 3000:3000 # These parameters are separated by a colon and indicate <external>:<internal> respectively.
+    env_file:
+      - ./.env.development.local
+    privileged: true
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    restart: always

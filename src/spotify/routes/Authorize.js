@@ -1,19 +1,17 @@
-import React, { useState, useEffect } from 'react'
-import { OauthBTN } from '../components';
+import React, { useState } from 'react'
+import { OauthBTN } from '../components/_index';
 
 export default function Authorization(props) {
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-
-  }, []);
+  const [data, setData] = useState(props.data.refresh_token);
 
   return (
     <>
-    <div className="userCreds">
-        <OauthBTN creds={props.data}/>
-    </div>
-    <p>{!data ? "Please authorized to see your refresh token..." : data}</p>
+    <p>{data ? "Token already set proceed to the menu > Play section" : "Please authorized to see your refresh token..."}</p>
+    {!props.data.refresh_token && 
+      <div className="userCreds">
+          <OauthBTN data={props.data}/>
+      </div>
+    }
     </>
   );
 }

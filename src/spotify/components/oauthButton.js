@@ -5,12 +5,12 @@ import { Button } from '@mui/material'
 export default function AuthorizationButton(props) {
   const params = new URLSearchParams({
     response_type: 'code',
-    client_id: props.creds.client_id,
-    scope: props.creds.scopes,
-    redirect_uri: props.creds.redirect_uri,
-    state: props.creds.state
+    client_id: props.data.client_id,
+    scope: props.data.scopes,
+    redirect_uri: props.data.redirect_uri,
+    state: props.data.state
   });
-  const authorizationUrl = props.creds.oauth_uri+params;
+  const authorizationUrl = props.data.oauth_uri+params;
 
   return (
     <Button variant="contained" href={authorizationUrl}>
