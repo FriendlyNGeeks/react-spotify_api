@@ -8,8 +8,6 @@ services:
       dockerfile: ./server/Dockerfile
     ports:
       - 7007:7007 # These parameters are separated by a colon and indicate <external>:<internal> respectively.
-    env_file:
-      - ./.env.production.local
     privileged: true
     stdin_open: true # docker run -i
     tty: true        # docker run -t
