@@ -4,8 +4,8 @@ services:
     # image: friendlyngeeks/peons-rpi:latest
     container_name: react-spotify
     build:
-      context: .
-      dockerfile: ./server/Dockerfile
+      context: ./server
+      dockerfile: ./Dockerfile
     ports:
       - 7007:7007 # These parameters are separated by a colon and indicate <external>:<internal> respectively.
     privileged: true
