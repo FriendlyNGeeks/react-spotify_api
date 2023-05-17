@@ -12,6 +12,5 @@ ENV NODE_ENV=production
 COPY . /usr/src/app
 RUN chmod +x docker-entrypoint.sh
 EXPOSE 7007
-ENTRYPOINT npm start
 # ENTRYPOINT ["/bin/sh -c npm start"]
-# CMD [ "npm", "start" ]
+CMD [ "npm", "start" ]
