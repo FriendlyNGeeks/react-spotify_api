@@ -79,11 +79,11 @@ async function exchangeCodeForTokens(code) {
     };
     request(authOptions, (error, response, body) => {
       if (!error && response.statusCode === 200) {
-        console.log("server.js => no error and status 200")
+        console.log("server.js => ExchangeCodeForTokens(): no error and status 200")
         settings.access_token = body.access_token;
-        console.log("server.js => accessToken:", settings.access_token)
-        settings.refresh_token = body.refresh_token;
-        console.log("server.js => refreshToken:", settings.refresh_token);
+        console.log("server.js => ExchangeCodeForTokens(): accessToken:", settings.access_token)
+        // settings.refresh_token = body.refresh_token;
+        // console.log("server.js => ExchangeCodeForTokens(): refreshToken:", settings.refresh_token);
         resolve();
       } else {
         reject(error || response.statusCode);
@@ -116,7 +116,7 @@ async function fetchingAccessToken (client_id, client_secret, refresh_token) {
   return new Promise((resolve, reject) => {
     request.post(options, (error, response, body) => {
       if (!error && response.statusCode === 200) {
-        console.log('server.js => Fetch Access Token: no error and status 200')
+        console.log('server.js => FetchingAccessToken(): Fetched Access Token: no error and status 200')
         settings.access_token = body.access_token;
         resolve(settings.access_token);
       } else {
@@ -130,9 +130,9 @@ async function initAccessToken() {
   try {
     await fetchingAccessToken(settings.client_id, settings.client_secret, settings.refresh_token)
     settings.api_granted = true;
-    console.log('server.js => Fetched Access Token:', settings.access_token)
+    console.log('server.js => InitAccessToken(): Fetched Access Token:', settings.access_token)
   } catch (error) {
-    console.log('server.js => Failed to fetch endpoint data from https://accounts.spotify.com/api/token:', error);
+    console.log(`server.js => InitAccessToken(): Failed to fetch endpoint data from ${settings.spotify_endpoint_token}`, error);
     res.redirect('/#' +
       querystring.stringify({
         error: 'invalid_token'
@@ -143,7 +143,7 @@ async function initAccessToken() {
 if (settings.client_id && settings.client_secret && settings.refresh_token && settings.spotify_api_route == 'socket') {
   initAccessToken()
 }else {
-  console.log('Required params client_id/secret/refresh missing or null')
+  console.log('server.js => Required params client_id/secret/refresh missing or null')
 }
 
 const getNowPlaying = async () => {
@@ -238,7 +238,7 @@ app.use('/api', async (req, res) => {
       await getNowPlayingItem(code);
       res.json(nowPlayingItem);
     } catch (error) {
-      console.log('server.js => Failed to fetch endpoint data from https://accounts.spotify.com/api/token:', error);
+      console.log(`server.js => GetNowPlayingItem failed to fetch endpoint data from ${settings.spotify_endpoint_token}`, error);
       res.redirect('/#' +
         querystring.stringify({
           error: 'invalid_token'
@@ -304,7 +304,7 @@ const startServer = async () => {
       console.log('server.js =>','ERROR:', error,'=> SOURCE: tryCatch[startServer]');
   }
 };
-
+console.log('server.js => Initializing Server')
 startServer();
 
 ///////////////////////////////////////////////////////////////////////

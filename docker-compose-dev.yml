@@ -1,7 +1,7 @@
 version: "2"
 services:
-  peons:
-    image: friendlyngeeks/peons-rpi:latest
+  react-spotify:
+    image: friendlyngeeks/react-spotify:latest
     container_name: react-spotify
     build:
       context: .

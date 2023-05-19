@@ -1,6 +1,5 @@
 #Dockerfile
-#node:14.15.1-alpine
-FROM arm64v8/node:19.1.0-alpine
+FROM node:14.15.1-alpine
 LABEL version="0.0.1"
 LABEL description="React Spotify API server for Now Playing"
 LABEL maintainer="friendlyneighborhoodgeeks@gmail.com"
@@ -9,7 +8,6 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 COPY package.json /usr/src/app/
 RUN npm install --production
-RUN apk add nano
 ENV NODE_ENV=production
 COPY . /usr/src/app
 EXPOSE 7007
