@@ -304,8 +304,12 @@ const startServer = async () => {
       console.log('server.js =>','ERROR:', error,'=> SOURCE: tryCatch[startServer]');
   }
 };
-console.log('server.js => Initializing Server')
-startServer();
+
+if (settings.client_id && settings.client_secret && settings.refresh_token) {
+  console.log('server.js => Initializing Server')
+  startServer();  
+}
+
 
 ///////////////////////////////////////////////////////////////////////
 //---------------------- SOCKET SETUP
