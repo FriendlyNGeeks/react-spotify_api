@@ -75,8 +75,9 @@ export default function SpotifyBitBoss (props) {
         }
         }
         if (socketAPI == 'socket') {
-            // SERVER LOOP fetch every 1 seconds
-            getNowPlayingItem();
+            socket.on("handShakeEstablished", () => {
+                getNowPlayingItem();
+            })
         }
     
     }, [socket]);

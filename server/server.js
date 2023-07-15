@@ -52,7 +52,7 @@ function getHostIP(reqAdmin) {
 }
 // CALL TO GET SERVER HOST IP
 async function asyncCall2HostIP() {
-  console.log('server.js => calling async function for ip')
+  console.log('server.js => AsyncCall2HostIP(): Searching for HOST IP')
   settings.host = await getHostIP()
   settings.redirect_uri = `http://${settings.host}:${settings.port || 3000}/api/callback`
 }
@@ -82,8 +82,6 @@ async function exchangeCodeForTokens(code) {
         console.log("server.js => ExchangeCodeForTokens(): no error and status 200")
         settings.access_token = body.access_token;
         console.log("server.js => ExchangeCodeForTokens(): accessToken:", settings.access_token)
-        // settings.refresh_token = body.refresh_token;
-        // console.log("server.js => ExchangeCodeForTokens(): refreshToken:", settings.refresh_token);
         resolve();
       } else {
         reject(error || response.statusCode);
@@ -97,7 +95,7 @@ async function exchangeCodeForTokens(code) {
 //--------------- GRAB ALL NOW PLAYING FROM SPOTIFY
 ///////////////////////////////////////////////////////////////////////
 
-async function fetchingAccessToken (client_id, client_secret, refresh_token) {
+async function fetchAccessToken (client_id, client_secret, refresh_token) {
   const basic = Buffer.from(`${client_id}:${client_secret}`).toString('base64');
 
   const options = {
@@ -116,7 +114,7 @@ async function fetchingAccessToken (client_id, client_secret, refresh_token) {
   return new Promise((resolve, reject) => {
     request.post(options, (error, response, body) => {
       if (!error && response.statusCode === 200) {
-        console.log('server.js => FetchingAccessToken(): Fetched Access Token: no error and status 200')
+        console.log('server.js => FetchAccessToken(): no error and status 200')
         settings.access_token = body.access_token;
         resolve(settings.access_token);
       } else {
@@ -128,7 +126,7 @@ async function fetchingAccessToken (client_id, client_secret, refresh_token) {
 
 async function initAccessToken() {
   try {
-    await fetchingAccessToken(settings.client_id, settings.client_secret, settings.refresh_token)
+    await fetchAccessToken(settings.client_id, settings.client_secret, settings.refresh_token)
     settings.api_granted = true;
     console.log('server.js => InitAccessToken(): Fetched Access Token:', settings.access_token)
   } catch (error) {
@@ -143,7 +141,7 @@ async function initAccessToken() {
 if (settings.client_id && settings.client_secret && settings.refresh_token && settings.spotify_api_route == 'socket') {
   initAccessToken()
 }else {
-  console.log('server.js => Required params client_id/secret/refresh missing or null')
+  console.log('server.js => IfElse[API Mode]: Required params client_id/secret/refresh missing or null')
 }
 
 const getNowPlaying = async () => {
@@ -169,7 +167,7 @@ async function getNowPlayingItem() {
   const song = await getNowPlaying();
   
   if (song == 'error' || song.status > 400) {
-    console.log('trigger')
+    console.log("server.js => getNowPlayingItem(): returned error")
     return false;
   }
 
@@ -288,6 +286,7 @@ app.get('*', (req, res) => {
 let socketServer = null
 
 const startServer = async () => {
+  console.log('server.js => StartServer(): Initializing Server')
   try {
     if (settings.environment == 'production') {
       // CALL TO GET SERVER HOST IP
@@ -295,101 +294,106 @@ const startServer = async () => {
       await asyncCall2HostIP(reqAdmin);
       socketServer = app.listen(settings.port, () => console.log(`server.js => Listening @ http://${settings.host}:${settings.port}`));
     }else if (settings.environment == 'development') {
-      // CALL TO GET SERVER HOST IP
+      // SETTING LOCALHOST IP/PORT
       settings.host = 'local.host'
       settings.redirect_uri = `http://localhost:${settings.port || 3000}/api/callback`
       socketServer = app.listen(settings.port, () => console.log(`server.js => Listening @ http://${settings.host}:${settings.port}`));
+    }else if (settings.environment == null) {
+      console.log('server.js => IfElse[asynCall2HostIP]: Required params environment missing or null')
     }
   } catch (error) {
-      console.log('server.js =>','ERROR:', error,'=> SOURCE: tryCatch[startServer]');
+      console.log('server.js =>','ERROR:', error,'=> SOURCE: tryCatch[startServer()]');
   }
-};
-
+}
+// Start Server IfElse
 if (settings.client_id && settings.client_secret && settings.refresh_token) {
-  console.log('server.js => Initializing Server')
   startServer();  
+}else {
+  console.log("server.js => IfElse[StartServer]: Required params client_id/secret/refresh missing or null")
 }
 
 
 ///////////////////////////////////////////////////////////////////////
 //---------------------- SOCKET SETUP
 ///////////////////////////////////////////////////////////////////////
+setTimeout(() => {
+  const io = socket(socketServer, {allowEIO3: true})
 
-const io = socket(socketServer, {allowEIO3: true})
-
-io.on('connection', async (socket) => {
-    console.log('conncection from:', socket.id)
-    function fetchUserId(socket) {
-      return socket.id
-    }
-
-    function sendBackFill() {
-      if (currentPayload) {
-        console.log("server.js => send currentPayLoad to:", socket.handshake.query.reactComponentName)
-        io.to(clientId).emit('chat', currentPayload)
+  io.on('connection', async (socket) => {
+      console.log('server.js => SocketIO: Connection from', socket.id)
+      socket.emit('handShakeEstablished')
+      function fetchUserId(socket) {
+        return socket.id
       }
-    }
 
-    const clientId = await fetchUserId(socket)
-
-    if (socket.handshake.query.clientid) {
-        console.log(`server.js => CLIENT CONNECTED: ${socket.handshake.query.clientid}`)
-        const client = {
-            'Socket_ID': socket.id,
-            'Client_IP': socket.handshake.query.clientip || null, 
-            'Username': socket.handshake.query.clientid || null,
-            'Section' : socket.handshake.query.section || null
+      function sendBackFill() {
+        if (currentPayload) {
+          console.log("server.js => SocketIO: Send currentPayLoad to", socket.handshake.query.reactComponentName)
+          io.to(clientId).emit('chat', currentPayload)
         }
-        if (!clientTable.some(e => e.Username === socket.handshake.query.clientid) && socket.handshake.query.adminid != "pi"){
-            var currentClient = socket.handshake.query.clientid
-            clientTable.push(client)
-            console.log("server.js => ", JSON.stringify(clientTable))
-        }
-        
-        io.sockets.emit('connectionMade', clientTable, currentClient)
-    }
-    else if (socket.handshake.query.adminid == "pi" && socket.handshake.query.hangup == 1) {
-        console.log("server.js => CLIENT CONNECTED: Admin")
-        io.sockets.emit('connectionAdmin', clientTable, settings.SERVER_HOST)
-    }else if (socket.handshake.query.reactComponentName == "marquee") {
-      await sendBackFill(socket)
-    }
+      }
 
-    socket.on("disconnect", (reason) => {
-        if(socket.handshake.query.clientid) {
-          // let currentClient = socket.handshake.query.clientid
-          clientTable = clientTable.filter(u => u.Socket_ID !== socket.id)
-          console.log(`server.js => CLIENT DISCONNECTED: ${socket.handshake.query.clientid}`)
-          // io.sockets.emit('connectionLost', clientTable, currentClient)
-        }
-    })
+      const clientId = await fetchUserId(socket)
 
-    socket.on("getNowPlayingItem", async() => {
-      console.log("server.js => request from frontend react component [SpotifyNowPlayingReact]")
-      const getNowPlayingLoop = async () => {
-        try {
-          const response = await getNowPlayingItem();
-          if (response) {
-            // send response back to client
-            console.log('server.js => socket response', 'artist:', response.artist, 'title:', response.title)
-            socket.emit('setNowPlayingItem', response)
-            // socket.emit('nowPlaying', response);
-          }else {
-            console.log('socket unable')
-            // send error response back to client
-            socket.emit('nowPlayingError', { message: 'Unable to get now playing' });
+      if (socket.handshake.query.clientid) {
+          console.log(`server.js => CLIENT CONNECTED: ${socket.handshake.query.clientid}`)
+          const client = {
+              'Socket_ID': socket.id,
+              'Client_IP': socket.handshake.query.clientip || null, 
+              'Username': socket.handshake.query.clientid || null,
+              'Section' : socket.handshake.query.section || null
           }
-        } catch (error) {
-          // send error response back to client
-          console.log("socket now playing error")
-          socket.emit('nowPlayingError', { message: error.message });
-        }
+          if (!clientTable.some(e => e.Username === socket.handshake.query.clientid) && socket.handshake.query.adminid != "pi"){
+              var currentClient = socket.handshake.query.clientid
+              clientTable.push(client)
+              console.log("server.js => ", JSON.stringify(clientTable))
+          }
+          
+          io.sockets.emit('connectionMade', clientTable, currentClient)
+      }
+      else if (socket.handshake.query.adminid == "pi" && socket.handshake.query.hangup == 1) {
+          console.log("server.js => CLIENT CONNECTED: Admin")
+          io.sockets.emit('connectionAdmin', clientTable, settings.SERVER_HOST)
+      }else if (socket.handshake.query.reactComponentName == "marquee") {
+        await sendBackFill(socket)
       }
 
-      // Initial call
-      getNowPlayingLoop();
-      // Start the loop at the specified interval
-      const intervalId = setInterval(getNowPlayingLoop, 1000);
-    })
-})
+      socket.on("disconnect", (reason) => {
+          if(socket.handshake.query.clientid) {
+            // let currentClient = socket.handshake.query.clientid
+            clientTable = clientTable.filter(u => u.Socket_ID !== socket.id)
+            console.log(`server.js => CLIENT DISCONNECTED: ${socket.handshake.query.clientid}`)
+            // io.sockets.emit('connectionLost', clientTable, currentClient)
+          }
+      })
 
+      socket.on("getNowPlayingItem", async() => {
+        let spotifyAPISentry = false;
+        console.log("server.js => request from frontend react component [SpotifyNowPlayingReact]")
+        const getNowPlayingLoop = async () => {
+          try {
+            const response = await getNowPlayingItem();
+            if (response) {
+              // send response back to client
+              console.log('server.js => socket response', 'artist:', response.artist, 'title:', response.title)
+              socket.emit('setNowPlayingItem', response)
+              // socket.emit('nowPlaying', response);
+            }else {
+              console.log('socket unable')
+              // send error response back to client
+              socket.emit('nowPlayingError', { message: 'Unable to get now playing' });
+            }
+          } catch (error) {
+            // send error response back to client
+            console.log("server.js => GetNowPlayingLoop(): ERROR", error.message)
+            socket.emit('nowPlayingError', { message: error.message });
+          }
+        }
+
+        // Initial call
+        getNowPlayingLoop();
+        // Start the loop at the specified interval
+        const intervalId = setInterval(getNowPlayingLoop, 1000);
+      })
+  })  
+}, 400);

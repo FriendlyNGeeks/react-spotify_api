@@ -8,7 +8,7 @@
     "dev": "cd server && yarn dev",
     "test": "craco test --env=node",
     "eject": "craco eject",
-    "deploy-rpi": "env-cmd -f .env.production.local cross-env GENERATE_SOURCEMAP=false && (cd server && docker build . --platform linux/arm64/v8 -t friendlyngeeks/react-spotify:rpi64-latest -f Dockerfile)",
+    "deploy-rpi": "cd server && docker build . --platform linux/arm64/v8 -t friendlyngeeks/react-spotify:rpi64-latest -f Dockerfile",
     "deploy-win": "env-cmd -f .env.production.local cross-env GENERATE_SOURCEMAP=false && (cd server && docker build . --platform windows/amd64 -t friendlyngeeks/react-spotify:win64-latest)",
     "build-prod": "env-cmd -f .env.production.local cross-env GENERATE_SOURCEMAP=false craco build && (cd server && yarn start)",
     "build-dev": "env-cmd -f .env.development.local cross-env GENERATE_SOURCEMAP=false craco build && (cd server && node server.js)",
